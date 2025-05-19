@@ -7,10 +7,10 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Clinic/Wpm.Management.API/Wpm.Management.API.csproj", "Clinic/Wpm.Management.API/"]
-RUN dotnet restore "Clinic/Wpm.Management.API/Wpm.Management.API.csproj"
+COPY ["Management/Wpm.Management.API/Wpm.Management.API.csproj", "Management/Wpm.Management.API/"]
+RUN dotnet restore "Management/Wpm.Management.API/Wpm.Management.API.csproj"
 COPY . .
-WORKDIR "/src/Clinic/Wpm.Management.API"
+WORKDIR "/src/Management/Wpm.Management.API"
 RUN dotnet build "Wpm.Management.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
