@@ -1,38 +1,33 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Wpm.Management.API.Data;
 using Wpm.Management.API.Models;
 
 namespace Wpm.Management.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PetsController(ManagementDbContext context) : ControllerBase
+public class PetsController(IDataProvider dataProvider) : ControllerBase
 {
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetPetById(Guid id)
+    public IActionResult GetPetById(Guid id)
     {
-        var pet = await context.Pets
-            .Include(z=>z.Breed)
-            .FirstOrDefaultAsync(p => p.Id == id);
+        var pet = dataProvider.GetPetById(id);
         
         return pet == null ? NotFound() : Ok(pet);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetPets()
+    public IActionResult GetPets()
     {
-        var pets = await context.Pets
-            .Include(z=>z.Breed)
-            .ToListAsync();
-        
+        var pets = dataProvider.GetPets();
+
         return Ok(pets);
     }
     
     [HttpPost]
-    public async Task<IActionResult> CreatePet([FromBody] AddPetRequest request)
+    public IActionResult CreatePet([FromBody] AddPetRequest request)
     {
-        var breed = await context.Breeds
-            .FirstOrDefaultAsync(b => b.Id == request.BreedId);
+        var breed = dataProvider.GetBreedById(request.BreedId);
         
         if (breed == null)
             return BadRequest("Breed not found");
@@ -44,9 +39,7 @@ public class PetsController(ManagementDbContext context) : ControllerBase
             BreedId = request.BreedId
         };
         
-        await context.Pets.AddAsync(pet);
-        
-        await context.SaveChangesAsync();
+        dataProvider.AddPet(pet);
         
         return CreatedAtAction(nameof(GetPetById), new { id = pet.Id }, pet);
     }
